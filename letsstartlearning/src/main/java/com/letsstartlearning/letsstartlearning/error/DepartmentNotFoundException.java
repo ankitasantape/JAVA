@@ -1,0 +1,24 @@
+package com.letsstartlearning.letsstartlearning.error;
+
+public class DepartmentNotFoundException extends Exception {
+
+    public DepartmentNotFoundException(){
+        super();
+    }
+
+    public DepartmentNotFoundException(String message){
+        super(message);
+    }
+
+    public DepartmentNotFoundException(String message, Throwable cause){
+        super(message, cause);
+    }
+
+    public DepartmentNotFoundException(Throwable cause){
+        super(cause);
+    }
+
+    protected DepartmentNotFoundException(String message, Throwable cause, SuppressWarnings enableSuppression){
+//        super(message, cause, enableSuppression);
+    }
+}
