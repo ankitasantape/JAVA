@@ -16,7 +16,7 @@ spring:
     activate:
       on-profile: dev
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     password: root
     url: jdbc:mysql://localhost:3306/springjdbc
     username: root
@@ -34,7 +34,7 @@ spring:
     activate:
       on-profile: qa
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     password: root
     url: jdbc:mysql://localhost:3306/springjdbc-qa
     username: root
@@ -59,7 +59,7 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     password: root
     url: jdbc:mysql://localhost:3306/springjdbc-prod
     username: root
