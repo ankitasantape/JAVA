@@ -15,6 +15,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Autowired
     private DepartmentRepository departmentRepository;
+
     @Override
     public Department saveDepartment(Department department) {
         return departmentRepository.save(department);
@@ -63,6 +64,6 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public Department fetchDepartmentByName(String departmentName) {
-        return departmentRepository.findByDepartmentName(departmentName);
+        return departmentRepository.findByDepartmentNameIgnoreCase(departmentName);
     }
 }

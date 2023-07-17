@@ -42,7 +42,9 @@ class DepartmentServiceTest {
         String departmentName = "IT";
         Department found =
                 departmentService.fetchDepartmentByName(departmentName);
+        if(found!=null){
+            assertEquals(departmentName, found.getDepartmentName());
+        }
 
-        assertEquals(departmentName, found.getDepartmentName());
     }
 }

@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface DepartmentService {
 
-
     Department saveDepartment(Department department);
 
     List<Department> fetchDepartmentList();
