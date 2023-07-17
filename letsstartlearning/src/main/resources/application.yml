@@ -4,20 +4,20 @@ server:
 logging:
   level:
     org.springframework.boot: DEBUG
-
+---
 spring:
-  config:
-    activate:
-      on-profile: dev
+  profiles.active: dev
 
 
 ---
 
 spring:
-  profiles: dev
+  config:
+    activate:
+      on-profile: dev
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    password: admin
+    password: root
     url: jdbc:mysql://localhost:3306/springjdbc
     username: root
   jpa:
@@ -30,10 +30,12 @@ welcome:
 ---
 
 spring:
-  profiles: qa
+  config:
+    activate:
+      on-profile: qa
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    password: admin
+    password: root
     url: jdbc:mysql://localhost:3306/springjdbc-qa
     username: root
   jpa:
@@ -53,10 +55,12 @@ management:
 ---
 
 spring:
-  profiles: prod
+  config:
+    activate:
+      on-profile: prod
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    password: admin
+    password: root
     url: jdbc:mysql://localhost:3306/springjdbc-prod
     username: root
   jpa:
