@@ -1,9 +1,12 @@
 server:
   port: 8082
 
-logging:
-  level:
-    org.springframework.boot: DEBUG
+info:
+  app:
+    java:
+      version: 19
+    name: Spring Actuator Example
+    type: Spring Boot
 ---
 spring:
   profiles.active: dev
@@ -27,6 +30,12 @@ spring:
 welcome:
   message: Welcome to Daily Code Buffer!!
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        exclude: "env,beans"
 ---
 
 spring:
@@ -69,3 +78,10 @@ spring:
     show-sql: true
 welcome:
   message: Welcome to Daily Code Buffer!!!
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        exclude: "env,beans"

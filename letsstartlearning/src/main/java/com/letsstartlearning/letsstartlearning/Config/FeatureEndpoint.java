@@ -15,8 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Endpoint(id = "features")
 public class FeatureEndpoint {
 
-    private final Map<String, Feature> featureMap =
-            new ConcurrentHashMap<>();
+    private final Map<String, Feature> featureMap = new ConcurrentHashMap<>();
 
     public FeatureEndpoint(){
         featureMap.put("Department", new Feature(true));
