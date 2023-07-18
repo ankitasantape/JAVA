@@ -50,7 +50,7 @@ management:
     web:
       exposure:
         include: "*"
-
+        exclude: "env,beans"
 
 ---
 
@@ -68,4 +68,4 @@ spring:
       ddl-auto: update
     show-sql: true
 welcome:
-  message: Welcome to Daily Code Buffer!!
+  message: Welcome to Daily Code Buffer!!!
