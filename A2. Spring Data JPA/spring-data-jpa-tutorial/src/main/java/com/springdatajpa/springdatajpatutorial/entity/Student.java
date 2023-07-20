@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,10 +34,13 @@ public class Student {
     private String firstName;
     private String lastName;
 
-    @Column(name = "email_address", nullable = false)
+    @Column(
+            name = "email_address",
+            nullable = false
+    )
     private String emailId;
-    private String guardianName;
-    private String guardianEmail;
-    private String guardianMobile;
+
+    @Embedded
+    private Guardian guardian;
 
 }
