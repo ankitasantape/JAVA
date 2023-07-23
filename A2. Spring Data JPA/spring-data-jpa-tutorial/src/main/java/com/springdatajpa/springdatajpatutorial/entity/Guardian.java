@@ -28,7 +28,6 @@ import lombok.NoArgsConstructor;
                 column = @Column(name = "guardian_mobile")
         )
 })
-
 public class Guardian {
 
     private String name;
