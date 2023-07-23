@@ -19,7 +19,6 @@ import lombok.NoArgsConstructor;
        ))
 public class Student {
 
-
     @Id
     @SequenceGenerator(
             name = "student_sequence",
