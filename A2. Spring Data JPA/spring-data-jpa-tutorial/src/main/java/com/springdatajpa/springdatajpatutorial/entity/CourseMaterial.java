@@ -1,18 +1,14 @@
 package com.springdatajpa.springdatajpatutorial.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.boot.autoconfigure.web.WebProperties;
-import org.springframework.data.annotation.Id;
+import lombok.*;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString(exclude = "course")
 public class CourseMaterial {
 
 
@@ -29,11 +25,14 @@ public class CourseMaterial {
    private Long courseMaterialId;
    private String url;
 
-   @OneToOne
+   @OneToOne(
+           cascade = CascadeType.ALL,
+           fetch = FetchType.LAZY,
+           optional = false
+   )
    @JoinColumn(
            name = "course_id",
            referencedColumnName = "courseId"
-
    )
    private Course course;
 
