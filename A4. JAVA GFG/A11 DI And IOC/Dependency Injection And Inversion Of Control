@@ -1,0 +1,1102 @@
+
+# This things will help you to understand code 
+
+1. Inversion Of Control - Concept of Spring boot 
+2. Dependency Injection
+3. Spring Beans
+4. IOC Container / Spring Context
+5. Annotations
+
+
+
+# Inversion Of Control - Instead of you doing work, somebody will do for you
+
+# Create an object onces and can use that object multiple places for that spribg boot will help you.
+
+ // singleton class 
+class A{
+
+}
+
+class B {
+   A objA = new A();
+}
+
+class C{
+   A objA = new A();
+
+}
+
+
+# object creation we take care of but deletion care taken by garbage collector.
+# Creating object is headach so someone else is taking that headach which is spring boot.
+# Managing object lifecycle is done by IOC.
+# Object is single in itself it can't be singleton. Singleton is associated with class only.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# How this function is invoked whether by dispatcher servlet or anyone becoz this is not static function it's a instance function, so it can be called by the object. 
+Now, who is creating the object of this class SampleController we don't know, but definitely there would be some object created before this function is invoked o/w u will get an error.
+ 
+
+@RestController
+public class SampleController {
+    private static Logger logger = LoggerFactory.getLogger(SampleController.class);
+
+    @Value("${discount.percentage}")
+    private Long discountPercentage;
+
+//    http://localhost:9000/hello?n=abc
+    @GetMapping("/hello")
+    public String sayHello(@RequestParam("n") String name){  // starting point
+        logger.info("Saying hello to {}", name);
+        logger.info("discountPercentage: {}", discountPercentage);
+        return "Hello " + name;
+    }
+}
+
+
+### Note
+**** All the classes which have @Component annotation either directly or indirectly on top of it, 
+@Component just tell spring to scan this classes which has @Component on top of this
+spring will create an object of that class on application startup.
+
+
+# @RestController - We need this annotation in order to make it(class SampleController) visible to dispatcher servlet, so that whenever any incoming request is coming onto server it can redirect to a particular server.
+# If you go inside @RestController annotation you will find many other annotation and @ResponseController is depend upon this annotations
+
+RestController.java
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Controller
+@ResponseBody
+public @interface RestController {
+
+
+	/**
+	 * The value may indicate a suggestion for a logical component name,
+	 * to be turned into a Spring bean in case of an autodetected component.
+	 * @return the suggested component name, if any (or empty String otherwise)
+	 * @since 4.0.1
+	 */
+	@AliasFor(annotation = Controller.class)
+	String value() default "";
+
+}
+
+
+# If you go inside @Controller annotation you find some other annotations
+
+Controller.java 
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Component
+public @interface Controller {
+
+	/**
+	 * The value may indicate a suggestion for a logical component name,
+	 * to be turned into a Spring bean in case of an autodetected component.
+	 * @return the suggested component name, if any (or empty String otherwise)
+	 */
+	@AliasFor(annotation = Component.class)
+	String value() default "";
+
+}
+
+
+### Note
+**** All the classes which have @Component annotation either directly or indirectly on top of it, 
+spring will create an object of that class on application startup.
+
+# So this hierarchy says, ResponseController --> Controller --> Component ,
+RestController is inheriting from Controller and Controller is inheriting from Component
+
+
+
+
+-----------------------------------------------------
+# This class doesn't have any annotation
+
+public class Person {
+
+    private int id; // unique key
+    private String name;
+    private int age;
+}
+
+# Why this class doesn't have @Controller on top of it?
+
+
+@SpringBootApplication
+public class DemoSpringBootApplication {
+	static Logger logger = LoggerFactory.getLogger(DemoSpringBootApplication.class);
+
+	public static void main(String[] args) {
+		SpringApplication.run(DemoSpringBootApplication.class, args);
+//		System.out.println("Inside main method");
+//		System.out.println("Another line of code");
+
+		logger.error("Error log");
+		logger.warn("Warn log");
+		logger.info("Info log");
+		logger.debug("Debug log");
+		logger.trace("Trace log");
+	}
+
+}
+
+
+# @SpringBootApplication have this many parent annotations on top of SpringBootApplication interface 
+
+SpringBootApplication.class
+
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@ComponentScan(
+    excludeFilters = {@Filter(
+    type = FilterType.CUSTOM,
+    classes = {TypeExcludeFilter.class}
+), @Filter(
+    type = FilterType.CUSTOM,
+    classes = {AutoConfigurationExcludeFilter.class}
+)}
+)
+public @interface SpringBootApplication {
+    @AliasFor(
+        annotation = EnableAutoConfiguration.class
+    )
+    Class<?>[] exclude() default {};
+
+    @AliasFor(
+        annotation = EnableAutoConfiguration.class
+    )
+    String[] excludeName() default {};
+
+
+
+
+# If you open @SpringBootConfiguration you will see @Configuration 
+
+
+SpringBootConfiguration.class
+
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Configuration
+@Indexed
+public @interface SpringBootConfiguration {
+    @AliasFor(
+        annotation = Configuration.class
+    )
+    boolean proxyBeanMethods() default true;
+}
+
+
+# Inside Configuration.java you will see @Component annotation, do you think, the object of DemoSpringBootApplication will be created? 
+
+Configuration.java
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Component
+public @interface Configuration {
+
+}
+
+
+# SpringBootApplication --> SpringBootConfiguration --> Configuration --> Component 
+
+SpringBootApplication inherites from SpringBootConfiguration and SpringBootConfiguration inherites from Configuration and Configuration inherites from Component
+So, either it's one level or multi level at the end it should have @Component annotation either directly or indirectly
+
+
+---------------------------------------------------------
+
+# When we run this Application DemoSpringBootApplication how will we get to know whether the objet is created or not? 
+Becoz I'm not using it somewhere. How will I get to know whether the object is created or not. So, indirectly means from the parent annotations.
+Like SpringBootApplication parent annotation is @springBootConfiguration .... SpringBootApplication --> SpringBootConfiguration --> Configuration --> Component 
+
+@Component don't have any parent @annotation
+
+Component.java 
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Indexed
+public @interface Component { // here, interface is just a way to declare annotation in java 
+
+	/**
+	 * The value may indicate a suggestion for a logical component name,
+	 * to be turned into a Spring bean in case of an autodetected component.
+	 * @return the suggested component name, if any (or empty String otherwise)
+	 */
+	String value() default "";
+
+}
+
+
+This are not any boiler plate annotation, this are not that does any functionality, @Component is a root level annotation.
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Indexed
+
+
+# In core java there is something @Override, 
+
+
+Override.java 
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.SOURCE)
+public @interface Override {   // here, Override is an annotation and the @interface is a way to define annotation, so this is the meaning of @interface
+
+}
+
+
+----------------------------
+
+# Run your application in debug mode 
+
+And Search for - DemoSpringBootApplication
+
+2024-04-04 15:47:35.253 DEBUG 7624 --- [           main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'demoSpringBootApplication'
+2024-04-04 15:47:35.256 DEBUG 7624 --- [           main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'sampleController'
+
+What's shared instance and singleton, bean?
+
+* shared instance - creating an object which can be shared across multiple classes.  
+* singleton - one object will be created  
+* bean - an object created by spring or java beans or spring beans , object which are not created by users manually 
+
+
+### Ways to create and object-
+
+Option 1 - Create an object by yourself 
+class Person{
+  some attributes will be here 
+}
+
+Person p = new Person();
+
+2. You tell spring that I want to create an object for this class on application startup for that you need to annotate this class with this annotation @Component
+
+If you add @Component on top of Person class
+
+@Component
+class Person{
+
+
+}
+
+Here, spring will create an object for you.
+After that you want to create and object for Person class by yourself you're free to do that. Eg. Person p = new Person();
+But the object created by spring will be a singleton object. Spring will not create any object multiple times. This is called IOC.
+But how can we use it? this question very evident. 
+Principle 
+1. IOC - 
+2. DI - Injecting a dependency which is already created. Injecting an object in another class which has already been created. That's how you will be able to use it.
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2024-04-04 15:47:35.253 DEBUG 7624 --- [           main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'demoSpringBootApplication'
+2024-04-04 15:47:35.256 DEBUG 7624 --- [           main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'sampleController'
+
+So, the meaning of aove 2 lines is 
+
+Spring is creating one object which shared across classes and name of that object particularly would be 'demoSpringBootApplication' which is a classname start with lowercase
+onces it's created after that whole application is started.
+
+# If a class don't have @annotation, the object for that class will not be created. So the object for Person class didn't create at this time. 
+But if I add @Component on top of Person class then it'll create an object for this Person class.
+
+@Component
+public class Person {
+
+    private int id; // unique key
+    private String name;
+    private int age;
+}
+
+So, at this time it has created an object/bean for this class Person,
+ 
+2024-04-04 16:09:56.828 DEBUG 3024 --- [           main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'demoSpringBootApplication'
+2024-04-04 16:09:56.834 DEBUG 3024 --- [           main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'person'
+2024-04-04 16:09:56.836 DEBUG 3024 --- [           main] o.s.b.f.s.DefaultListableBeanFactory     : Creating shared instance of singleton bean 'sampleController'
+
+--------------------------------------------------------------------------------------
+
+# Let's say, you've Java class and you want spring to create an object for your java class so that we can use it later on. But what if spring is not able to store it and want use it later on.
+This object is created by spring and not by you. So, it will have to store it somewhere. So that, we can retrieve it later on. How we will retrieve it? Wht's this store known as?
+- IOC store - It's known as IOC container. Stores all the beans/object created by spring. 
+- In realtime application or in code it's called as application context.
+- Analogy : Critical Section/ Synchronize block
+  When we say there is a critical section where no more than one thread which is doing a right operation can go inside. That's a hypothetical term just for explaining.
+  but, in reality in code there is no class named with critical section or no function, it's represented by synchronized block, synchronized keyword if you added infront of 
+  any block/function it represents a critical section. 
+  
+- Similarly, here IOC container is a term used for explanation that it stores in some container and from that container any bean stored can be referenced in your application.  
+  And how you will do that? You will do that via Application.context class or interface.
+  
+# Where this IOC container should lie?
+  In memory or on disc. 
+  Should it lie on disc?
+  Just like any other object it should also reside in memory. There is no point of storing it in disc. Becoz as soon as you stop your application every object should be deleted.
+  
+  Diagram- In main memory, when you run your application, all your objects, references, are stored here. ASA you stop the process everything is deleted. 
+  Now, in this main memory instead of storing an object in adhoc way, there is one more seggregation inside this, there is one more layer or container which is created.
+  That can only be referenced by springboot. From a container at any time springboot can retrieve a bean from the container.  
+  But a object which is created by me/user springboot will not be able to manage this.
+
+
+### IOC - IOC is a phonomenone which is used to create a object instead we creating an object spring will create an object for us and it will store it in IOC container.
+### DI - Dependency Injection says that if there is a dependency(bean) which is already created by spring we can inject it in any other class. 
+    If there is a bean of that class is already created we can use that bean in any other class and when we use that. The phenomenon is known as DI.
+    We are injecting the dependency which is already created.  
+		 
+		 
+		 
+# If I'm trying to inject/retrieve a dependency which is not created, shall I get any error? Yes. How we do this in reality?	
+
+- How do we create object in java? by calling the constructor	 
+		 
+@RestController
+public class SampleController {
+    private static Logger logger = LoggerFactory.getLogger(SampleController.class);
+
+    SampleController(){
+        this.logger.info("Inside SampleController constructor, object = {}", this);
+    }
+	
+    @Value("${discount.percentage}")
+    private Long discountPercentage;
+
+//    http://localhost:9000/hello?n=abc
+    @GetMapping("/hello")
+    public String sayHello(@RequestParam("n") String name){  // starting point
+        SampleController sc = new SampleController();
+        logger.info("Newly created sample controller object is {}", sc);
+
+//        logger.info("Saying hello to {}", name);
+//        logger.info("discountPercentage: {}", discountPercentage);
+        return "Hello " + name;
+    }
+}
+
+
+// This logs will be printing 2times, 1time when spring created it and other when we created it.
+// This object is created by spring and it has different address than the object created by user(me) 
+// Inside SampleController constructor, object = demospringboot.SampleController@e041f0c               ----- created by spring boot
+
+// This object is created by user(me) and it has different address than the object created by spring 
+// Newly created sample controller object is     demospringboot.SampleController@75248fd9		       ------ created by me  
+
+( Do you think this object will create again and again ? Yes. The number of times you hit the API, everytime it will create new object, this is not done by spring object. 
+Spring creates object only once when u run/start ur application, and it just goes running continuously, but it don't create new object when you hit the API.
+Whenever you hit the API the application is not starting again and again, application is continuously running that's why it is acting like a server.
+So application will start only once, that's why the bean which is created by spring only a singleton bean. Same bean will be reflected here  
+    SampleController(){
+        this.logger.info("Inside SampleController constructor, object = {}", this);
+    }
+)
+
+
+# That means IOC not enforce you to not create object, you can still create object yourself even though u r using @Component annotation  
+
+
+
+- Have created this function getRandomPersonId() and want to use this function inside SampleController class 
+
+
+@Component
+public class Person {
+
+    private int id; // unique key
+    private String name;
+    private int age;
+    
+    public Integer getRandomPersonId(){
+        Random random = new Random();
+        return random.nextInt();
+    }
+}
+
+
+- Here( inside SampleController class ), we'll create Person object inside sayHello() API 
+
+    @GetMapping("/hello")
+    public String sayHello(@RequestParam("n") String name){  // starting point
+          Person person = new Person();
+        int id = person.getRandomPersonId();
+        logger.info("person = {}, id = {}", person, id);
+
+        return "Hello " + name;
+    }
+
+    // The number of times you hit the API everytime you will get different value
+    // person = demospringboot.Person@f4fe87a, id = 1582935616
+    // person = demospringboot.Person@5e03a950, id = 991313319
+
+
+- Everytime we're getting different value then what's the point of creating this object, can't we just create one single object then use it for every API call.
+
+- What optimization we can do here? So, here I want to inject a dependency that's already created. So, springboot has already created a object [ Creating shared instance of singleton bean 'person' ] 
+  for me then why can't I use that object.
+  
+- Creating a object is required when those objects have different-different properties and attributes, but here id, name, age doesn't matter to me, here I'm getting a randomId.
+  So, wht's the point of creating this object again n again. 
+- If I try to inject the dependency of Person class in this SampleController class 
+
+@RestController
+public class SampleController {
+    private static Logger logger = LoggerFactory.getLogger(SampleController.class);
+
+    SampleController(){
+        this.logger.info("Inside SampleController constructor, object = {}", this);
+    }
+
+    // injecting the dependency of Person in this class
+    @Autowired // tells spring not to create a new object, instead get the object from IOC container
+    Person person;
+
+
+    // http://localhost:9000/hello?n=abc
+
+    @GetMapping("/hello")
+    public String sayHello(@RequestParam("n") String name){  // starting point
+        int id = this.person.getRandomPersonId();
+        logger.info("person = {}, id = {}", this.person, id);
+        return "Hello " + name;
+    }
+
+    // The number of times you hit the API everytime you will create different value
+    // person = demospringboot.Person@f4fe87a, id = 1582935616
+    // person = demospringboot.Person@5e03a950, id = 991313319
+	
+	// But, after injecting dependency injection, the no. of times you hit the API everytime you will get the same value
+    // person = demospringboot.Person@56b08e59, id = -1465104909
+    // person = demospringboot.Person@56b08e59, id = -1310758031
+}
+     
+@RestController
+public class SampleController {
+    private static Logger logger = LoggerFactory.getLogger(SampleController.class);
+
+    SampleController(){
+        this.logger.info("Inside SampleController constructor, object = {}", this);
+    }	 
+	 
+	// EITHER 
+    // injecting the dependency of Person in this class
+//  @Autowired // tells spring not to create a new object, instead get the object from IOC container
+//  Person person2;//
+    
+	// OR
+//  Even if I remove @Autowired and write it like this, still it will work,  Becoz, we're using the same varible which has been instantiated at the same level either by me or by springboot.
+    Person person = new Person();
+	
+	@GetMapping("/hello")
+    public String sayHello(@RequestParam("n") String name){  // starting point
+        int id = this.person.getRandomPersonId();
+        logger.info("person = {}, id = {}", this.person, id);
+        return "Hello " + name;
+    }
+	
+}	
+
+
+
+#### Good Question - If a class is annotated with @Component and class has only parameterized constructor will the spring create bean for this class or not?
+How the spring will work if there is only parameterized constructor and wht if there are multiple parameterized constructor. Then how will spring work? 
+So, there is a decision making, whenever spring is creating an object it has to make a decision which constructor to call. If you don't provide any constructor 
+it's very simple for it to create. Becoz there is a default constructor. If you add one default constructor then also it's almost similar. It'll just print whatever you have 
+done in this constructor. 
+
+    SampleController(){
+        this.logger.info("Inside SampleController constructor, object = {}", this);
+    } 
+	
+Problem, will come when you have multiple parameterised constructor and you have combinations of parameterised and default. 
+
+# @Autowired can be used over an object only? 
+   A bean can be a object and can be a value.
+   
+   @Autowired  // bean 
+   Person person2;
+   
+   So, this is also can e a bean 
+   
+   @Value("${discount.percentage}") // bean 
+   private Long discountPercentage;
+   
+   
+# So, bean is not with respect to spring, it's not always an object. Bean is a value which is always stored in a container. Now, it can a number or it can be a reference to an object.
+So, both of them are a bean. But, yes @Autowired can only be used on top of an object.  
+If you try to use on top of any abstract class, any primitive datatype you should use @Value instead 
+of @Autowired. Both of them does the same task. Its just that @Autowired inject the object dependency and @Value injects the value dependency.
+But the value which is stored in the IOC container.
+
+# Work inject means just pick-up the object reference from the IOC container and add it to the instance variable of this class.
+
+### Question : Is Autowired allowed inside the function ? 
+    No. 
+	Becoz, @Autowired means injecting the dependency/object of other class in this class but when we add it inside function it doesn't act  
+	Becoz it's not acting a a class level, it's acting as a local variable. So, that's why autowired inside function is not allowed. It has to do it at class level.
+
+
+	@GetMapping("/hello")
+    public String sayHello(@RequestParam("n") String name){  // starting point
+
+      @Autowired
+      Person person;   
+	  
+	}  
+	
+	
+// component - allow IOC
+// Autowired - allow DI	
+	
+	
+### Question: 
+
+
+If I've created the same Person object in Test class and in SampleController class , will the object be same or different? 
+Yes, it will be same only both the objects are created by Autowired , Autowired picks from the IOC container and in IOC container there will be only one reference becoz it's a shared instance.	
+
+demospringboot.SampleController          : person = demospringboot.Person@2192979e, id = 1048426448   // Get this object when I hit this API http://localhost:9000/hello?n=Ankita 
+demospringboot.Test                      : person = demospringboot.Person@2192979e, id = 351422803   // Get this object when I hit this API http://localhost:9000/test?n=Ankita
+
+
+@RestController
+public class Test {
+    private static Logger logger = LoggerFactory.getLogger(Test.class);
+
+    @Autowired
+    Person person;
+
+//  http://localhost:9000/test?n=Ankita
+    @GetMapping("/test")
+    public String testFunc(@RequestParam("n") String name){  // starting point
+
+        int id = this.person.getRandomPersonId();
+        logger.info("person = {}, id = {}", this.person, id);
+
+        return "Hello " + name;
+    }
+}
+
+@RestController
+public class SampleController {
+    private static Logger logger = LoggerFactory.getLogger(SampleController.class);
+
+    SampleController(){
+        this.logger.info("Inside SampleController constructor, object = {}", this);
+    }
+
+    @Autowired // tells spring not to create a new object, instead get the object from IOC container
+    Person person;//
+
+	@GetMapping("/hello")
+    public String sayHello(@RequestParam("n") String name){  // starting point
+
+        int id = this.person.getRandomPersonId();
+        logger.info("person = {}, id = {}", this.person, id);
+
+        return "Hello " + name;
+    }
+}
+
+
+
+------------------------------------------------------------
+
+### Follow up question for above question: In above question, we've created an object through Autowired way but what if 
+I want to create an object by creating a object by myself. Will the object will be same or different? 
+Ans. They will be different in different. But they will be same in same class. 
+
+Person person = new Person();
+
+demospringboot.SampleController          : person = demospringboot.Person@161318c, id = -1398415581 // http://localhost:9000/hello?n=Ankita
+
+demospringboot.Test                      : person = demospringboot.Person@486aaee4, id = -1270983894 // http://localhost:9000/test?n=Ankita
+
+
+
+### Question: What will happen if I autowired in same class 2 times? It'll print same value.
+
+@Autowired 
+Person person;
+
+@Autowired
+Person person2;
+
+demospringboot.SampleController          : person = demospringboot.Person@4e408560, person2 = demospringboot.Person@4e408560, id = 307305619
+
+
+Note: Ideally, you should never do this.  
+
+
+-------------------------------------------------------------------------------
+
+### Entire springboot is depend on this 2 concept IOC and DI.
+-------------
+
+
+### How do you compare static in dependency injection? 
+If you use static everywhere you are somehow breaking 
+
+- Java is a OOPs, it basically constitutes multiple functionality like inheritance, encapsulation (binding functionality and attributes in a particular entity together 
+itself with the help of instance variable and functions )  ...etc. And now if you make everything static you're somehow breaking the law of it.
+
+
+- suppose there are 2 classes A and B and they both require Person class 
+  In class A and B, we're doing @Autowired Person P in class A and B. 
+  class A {
+     @Autowired 
+	 Person p;
+  
+  }
+  
+  class B {
+     @Autowired 
+	 Person p;
+  
+  }
+  
+  class Person{
+  
+  }
+  
+  Currenly, we're saying both the autowired in person A and B are same. Becoz Person P is a singleton shared instance.
+  But, what if tell you that Spring is also provide a functionality of shared instances but which is not a singleton. That is Person p would be different in class A and class B.
+  They would be same in that particular class like Person p would be same in class A and Person p would be same class B.
+  But different in each class A and B. Similar to Person P = new Person().
+  Will your static be able to handle this? No. it will have the same property throughout. So, spring will provide this capability also. 
+  
+
+- Bydefault your bean is created to singleton object but there is scope that can be changed and it can create multiple object.
+
+
+---------------------------------------------------
+
+# What will happen if there is no dependency? 
+
+What if there is no @Component on top of Person class, will spring create an object for this? 
+No, it won't.
+Will @Autowired Person p; shows an error after or before starting an application? 
+Spring creates an object before starting the application. Similarly, it also attaches the object, it resolves this dependencies. 
+Whatever you use @Autowired, it's all done before running the application. So, whenever there is a failure your application will not start.
+
+@RestController
+public class SampleController {
+    private static Logger logger = LoggerFactory.getLogger(SampleController.class);
+
+    SampleController(){
+        this.logger.info("Inside SampleController constructor, object = {}", this);
+    }
+
+    @Autowired 
+    Person person;
+
+    @Autowired
+    Person person2;
+}
+
+//@Component
+public class Person {
+
+    private int id; 
+    private String name;
+    private int age;
+
+    public Integer getRandomPersonId(){
+        Random random = new Random();
+        return random.nextInt();
+    }
+}
+
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Field person in demospringboot.SampleController required a bean of type 'demospringboot.Person' that could not be found.
+
+The injection point has the following annotations:
+	- @org.springframework.beans.factory.annotation.Autowired(required=true)
+
+Action:
+
+Consider defining a bean of type 'demospringboot.Person' in your configuration.
+
+
+Process finished with exit code 1
+
+-----------------------------------------------------------------------------------
+
+
+@Component
+public class Person {
+
+    Person(String name, int age){
+        this.age = age;
+        this.name = name;
+        this.id = new Random().nextInt(100);
+    }
+	
+    private int id; 
+    private String name;
+    private int age;
+
+    public Integer getRandomPersonId(){
+        Random random = new Random();
+        return random.nextInt();
+    }
+}
+
+
+Question: Do you think the bean of this class will be created? 
+No. It'll scan all the classes which has @Component on top of it.
+So, when we start the application SampleController.java and Test.java will not fail. 
+
+As soon as, you add the parameterised constructor, it hides the default constructor. Spring is trying to create an object it has to invoke this parameterised constructor.
+It has a sense that I can call the parameterised constructor. But you tell me what parameters do I need to pass. How it will get to know the parameters. 
+Similar to for eg. If you want to go to office either drive through your car or book a taxi. If you don't tell taxi driver where to go will he/she able to drop you at that place?
+No. So similar to that, here is also spring doesn't no what parameters it should pass.
+So, this will be resolved when you add a default constructor. Becoz spring knows that it has a default constructor that it has to call.
+
+ 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in demospringboot.Person required a bean of type 'java.lang.String' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'java.lang.String' in your configuration.
+
+
+Process finished with exit code 1
+
+
+---------------------------------------------------------------
+
+public class DBConnection {
+
+    // jdbc:mysql://localhost:3306/dbName
+
+    private String jdbcUrl;
+
+    private String username;
+
+    private String password;
+
+    DBConnection(String jdbcUrl, String username, String password){
+        this.jdbcUrl = jdbcUrl;
+        this.username = username;
+        this.password = password;
+    }
+}
+
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 0 of constructor in demospringboot.Person required a bean of type 'java.lang.String' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'java.lang.String' in your configuration.
+
+
+Process finished with exit code 1
+
+--------------------------------------------
+
+How can we resolve this, think in term of Autowiring?
+- Objects are autowired, what are the other things that can be injected other that objects.
+If there is jdbc url how should we do that, by defining some value annotations.
+And this time, this values will be known to spring. 
+
+
+@Component
+public class DBConnection {
+
+    // jdbc:mysql://localhost:3306/dbName
+
+    private String jdbcUrl; // url in a format which is used to connect to a relational db from java
+
+    private String username;
+
+    private String password;
+
+    DBConnection(@Value("${jdbc.url}") String jdbcUrl,
+                 @Value("${username}") String username,
+                 @Value("${password}") String password){
+        this.jdbcUrl = jdbcUrl;
+        this.username = username;
+        this.password = password;
+    }
+
+}
+
+===========================================
+
+
+@Component
+public class DBConnection {
+
+    // jdbc:mysql://localhost:3306/dbName
+
+    private String jdbcUrl; // url in a format which is used to connect to a relational db from java
+
+    private String username;
+
+    private String password;
+
+     // If you comment out this 
+//    DBConnection(@Value("${jdbc.url}") String jdbcUrl,
+//                 @Value("${username}") String username,
+//                 @Value("${password}") String password){
+//        this.jdbcUrl = jdbcUrl;
+//        this.username = username;
+//        this.password = password;
+//    }
+    
+    
+	// Let's suppose that this DB connection is depend on this Person object, will this project work? Becoz it's not aware of what Person is unless and until it's(Person class) not @Component
+    DBConnection(Person p){
+        
+    }   
+
+}
+
+
+### Question - Why haven't we use autowired in DBConnection(@Autowired Person person )?
+
+- If the decision making is evident there is no requirement of Autowiring in constructor, in properties it is mandatory.
+- In case of constructor, there are some kind of evident injection.
+  For eg. if you have only constructor then definitely the person that you're getting here needs to be the bean. What spring will do, it'll try to search in a IOC container.
+  Talking abt, whenever there is only one constructor,   
+
+# @Autowired is not always required on top of constructor, sometimes it's required whenever there is conflict.
+
+
+@Component
+public class DBConnection {
+
+    private static Logger logger = LoggerFactory.getLogger(DBConnection.class);
+
+    // jdbc:mysql://localhost:3306/dbName
+
+    private String jdbcUrl; // url in a format which is used to connect to a relational db from java
+
+    private String username;
+
+    private String password;
+
+//    DBConnection(@Value("${jdbc.url}") String jdbcUrl,
+//                 @Value("${username}") String username,
+//                 @Value("${password}") String password){
+//        this.jdbcUrl = jdbcUrl;
+//        this.username = username;
+//        this.password = password;
+//    }
+//
+
+//    @Autowired
+    DBConnection(Person person){
+        this.logger.info("Inside DBConnection, person - {}", person); // Inside DBConnection, person - demospringboot.Person@3f3c966c
+    }
+
+    @Autowired
+    DBConnection(Person person, @Value("${jdbc.url}") String jdbcUrl){
+        this.logger.info("Inside DBConnection, person - {}, jdbcUrl - {}", person, jdbcUrl); // Inside DBConnection, person - demospringboot.Person@3f3c966c, jdbcUrl - jdbc.mysql://localhost:3306/youtube
+    }
+}
+
+//   Injecting the dependency using parameters (Way 1)
+    
+//    @Autowired
+//    Person person;
+//    
+//    DBConnection(){
+//        
+//    }
+    
+//    Injecting the dependency using constructor (Way 2)
+    
+    Person person;
+    
+    DBConnection(Person person){
+        this.person = person;
+    }
+    
+//  Which one is better 1 or 2, and when should we use which one?
+//  Using setters (Way 3) - rarely used  
+
+
+----------------------------------------------------------------------------------------------------------
+
+Wherever, a class is loaded in the JVM which one is initialised first instance variables or constructor ? 
+Ans. Instance variables.
+
+
+Question: What will be the value of this parameters null or some definite value?
+Ans- Null. demospringboot.DBConnection              : jdbcUrl = null, username = null, password = null
+Why? Becoz they get initialised when class is loaded, and at that time it didn't read the configuration.
+So, basically when you initialised constant variable that's happen before the constructor.
+But this injection @Value("${jdbc.url}") you're doing that is happen after the constructor.
+So, even though if it is giving null here, 
+Let's put this injection values in one Controller class Test and call default constructor
+
+@Component
+public class DBConnection {
+
+    private static Logger logger = LoggerFactory.getLogger(DBConnection.class);
+
+    // jdbc:mysql://localhost:3306/dbName
+
+    @Value("${jdbc.url}")
+    private String jdbcUrl; // url in a format which is used to connect to a relational db from java
+
+    @Value("${username}")
+    private String username;
+
+    @Value("${password}")
+    private String password;
+    
+    DBConnection(){
+        this.logger.info("jdbcUrl = {}, username = {}, password = {}", jdbcUrl, username, password);
+    }
+}	
+
+
+@RestController
+public class Test {
+    private static Logger logger = LoggerFactory.getLogger(Test.class);
+
+    @Value("${jdbc.url}")
+    private String jdbcUrl; // url in a format which is used to connect to a relational db from java
+
+    @Value("${username}")
+    private String username;
+
+    @Value("${password}")
+    private String password;
+
+    Test(){
+        this.logger.info("Inside test jdbcUrl = {}", jdbcUrl); // Inside test jdbcUrl = null
+    }
+
+//  Hit this api to see values inside this API http://localhost:9000/test?n=Ankita
+    @GetMapping("/test")
+    public String testFunc(@RequestParam("n") String name){  // starting point
+        this.logger.info("Inside testFunc jdbcUrl = {}", jdbcUrl); // Inside testFunc jdbcUrl = jdbc.mysql://localhost:3306/youtube
+
+        return "Hello " + name;
+    }
+}
+
+
+Conclusion - Whenever you load the dependency as a parameter it's not work the same way, your parameter initialization works in the core java.
+
+public class Sample {
+
+    int a = 10; // Step 1 - first assing value to variable a = 10
+
+    @Value()
+    int b; // Step 3 - in this step at the end you will have value but if you use parameter/variable injection, you will not be utilize the value of it in the constructor that's the point which I'm trying to make. 
+	        // that means you need to initialise it inside constructor then only it'll be visible
+	
+    
+    Sample(){  // Step 2 - in this step constructor will execute
+        System.out.println(a);
+    }
+
+    @Value("${b}")
+    int b = 20;
+
+    public static void main(String[] args) {
+        Sample sample = new Sample();
+    }
+}
+
+
+
+// Step 3 - in this step at the end you will have value but if you use parameter/variable injection, you will not be utilize the value of it in the constructor that's the point which I'm trying to make. 
+	        that means you need to initialise it inside constructor then only it'll be visible
+Eg. to show step 3	
+    
+@Component
+public class DBConnection {
+
+    private static Logger logger = LoggerFactory.getLogger(DBConnection.class);
+
+	@Autowired
+    Person person;
+
+    DBConnection(){
+        this.logger.info("Inside DBConnection - person = {} ", person); // here you will get null value for person object Inside DBConnection - person = null
+    }
+}	
+
+
+Conclusion - So, you should always use constructor injection, whenever you want to do something with the dependency that you're injecting 
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Question: What's the difference between above and below code?
+The dependency that is injected if you want to use it in the constructor go ahead with constructor injection and if that's not the scenario then either go ahead with 
+the constructor injection or parameterised constructor. So, constructor injection is safe in all the scenario. Parameter injection you should do when that parameter 
+is not utilized inside the constructor at the end of it in the API function definitely both the ways will work. 
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+@Component
+public class DBConnection {
+
+    private static Logger logger = LoggerFactory.getLogger(DBConnection.class);
+
+	 
+    Person person;
+
+    DBConnection(Person person){
+        this.logger.info("Inside DBConnection - person = {} ", person); // Inside DBConnection - person = demospringboot.Person@3a71c100
+        this.person = person;
+    }
+}	
+
+
+------------------------------
+
+
+
+Agenda for tomorrow's
+
+- Bean annotation 
+- Bean scopes
+- some common parent annotations 
+- APIs
